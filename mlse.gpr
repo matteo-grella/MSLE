@@ -1,0 +1,54 @@
+with "aws";
+with "xmlada";
+
+project MLSE is
+
+   for Languages use ("Ada");
+
+   type Mode_Type is ("Debug", "Release");
+   Mode : Mode_Type := "Release";
+   --Mode : Mode_Type := "Debug";
+
+   for Source_Dirs use ("src/**");
+   for Main use ("parse_master.adb", "parse_slave.adb", "eval.adb");
+
+   for Object_Dir use "obj";
+   for Exec_Dir use "bin";
+
+   package Compiler is
+      case Mode is
+         when "Release" =>
+            for Default_Switches ("ada") use ("-g", "-gnat12", "-gnatn", "-O2", "-ffast-math"); -- , "-ftree-vectorize", "-fomit-frame-pointer"
+         when "Debug" =>
+            -- gprof => -pg
+            -- perf  => -ggdb
+            for Default_Switches ("ada") use ("-gnat12", "-Wall", "-g", "-ggdb", "-gnato", "-gnatwa");
+      end case;
+   end Compiler;
+
+   package Builder is
+      case Mode is
+         when "Release" =>
+            for Default_Switches ("ada") use ("-j4", "-m");
+
+         when "Debug" =>
+            for Default_Switches ("ada") use ("-g", "-j4", "-Wall", "-m");
+      end case;
+   end Builder;
+
+   package Ide is
+      for Compiler_Command ("ada") use "gnatmake";
+      for Compiler_Command ("c") use "gcc";
+   end Ide;
+
+   package Linker is
+      case Mode is
+         when "Release" =>
+            for Linker_Options use ("-lm");
+         when "Debug" =>
+            -- gprof => -pg
+            for Linker_Options use ("-lm", "-g", "-Wall");
+      end case;
+
+   end Linker;
+end MLSE;

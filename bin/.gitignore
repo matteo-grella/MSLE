@@ -1,0 +1,6 @@
+# Ignore everything in this directory
+*
+# Except this fileS
+!.gitignore
+!parse_master_config.xml
+!parse_slave_config.xml
